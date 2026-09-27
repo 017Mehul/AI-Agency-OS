@@ -14,4 +14,8 @@ Supabase configuration uses `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Servi
 
 Activepieces uses `ACTIVEPIECES_TRIGGER_URL` and `ACTIVEPIECES_WEBHOOK_SECRET`.
 
+### Activepieces M2M execution
+
+Internal automation calls use `Authorization: Bearer <ACTIVEPIECES_M2M_SECRET>` against `/api/heartbeat` and `/api/mission-run`. Keep `ACTIVEPIECES_M2M_SECRET` only in Vercel and in the matching Activepieces secret connection. Never commit or paste the value into source control.
+
 Never commit these values.
