@@ -1,2 +1,4 @@
+import {config} from "../lib/config.js";
 export const access="public";
-export default async function(req,res){res.json({status:"ok",service:"ai-agency-os",version:"0.1.0",architecture:["core-engine","agent-system","mission-engine","approval-system","provider-integrations"],approval_gate:true,author:"Mehul Gupta",brand:"MG Labs Co"});}
+export const methods=["GET"];
+export default async function(req,res){res.setHeader("Cache-Control","no-store");res.json({status:"ok",service:"ai-agency-os",version:"0.2.0",architecture:["core-engine","agent-system","mission-engine","approval-system","provider-integrations"],approval_gate:true,author:"Mehul Gupta",brand:"MG Labs Co",config:{appName:config.appName,brandName:config.brandName,aiProvider:config.ai.provider,aiModel:config.ai.model,supabaseUrl:config.supabase.url,supabasePublishableKey:config.supabase.publishableKey||null,supabaseConfigured:Boolean(config.supabase.publishableKey),automationProvider:config.automation.provider}});}
