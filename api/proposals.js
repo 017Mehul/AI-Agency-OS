@@ -7,6 +7,7 @@ export default async function(req,res){try{
  const internal=isInternalRequest(req),user=internal?null:await getAuthenticatedUser(bearerToken(req));
  if(req.method==="GET"){
   const u=new URL(req.url,"http://localhost"),id=u.searchParams.get("id"),status=u.searchParams.get("status"),leadId=u.searchParams.get("lead_id");
+  if(!internal&&!id&&!leadId)return res.status(400).json({error:"lead_id or id is required"});
   if(!internal&&leadId)await assertLeadOwner(leadId,user.id);
   let q=id?"id=eq."+encodeURIComponent(id):"select=*&order=created_at.desc&limit="+limit(u.searchParams.get("limit"),100,100);
   if(id)q+="&select=*";if(status)q+="&status=eq."+encodeURIComponent(status);if(leadId)q+="&lead_id=eq."+encodeURIComponent(leadId);
