@@ -18,7 +18,7 @@ The AI layer is provider-independent and can use NVIDIA or OpenAI through enviro
 
 1. Clone the repository.
 2. Copy `.env.example` to `.env`.
-3. Configure your deployment environment with the required credentials.
+3. Configure the deployment environment with the required credentials.
 4. Deploy the API and static frontend on a compatible Node/serverless platform.
 
 Never commit `.env`, API keys, Supabase service tokens, Activepieces secrets, or deployment credentials.
@@ -29,6 +29,11 @@ Never commit `.env`, API keys, Supabase service tokens, Activepieces secrets, or
 - `lib/` — core configuration, AI providers, Supabase and automation adapters
 - `public/` — web control plane
 - `docs/` — architecture and deployment documentation
+- `.github/workflows/` — CI and secret scanning
+
+## Production infrastructure
+
+The reference backend uses a dedicated Supabase project for persistence and Activepieces for workflow execution. Provider credentials are deployment-time secrets and are intentionally absent from this repository.
 
 ## Security
 
