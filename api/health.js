@@ -1,0 +1,2 @@
+export const access="public";
+export default async function(req,res){res.json({status:"ok",service:"ai-agency-os",version:"0.1.0",architecture:["core-engine","agent-system","mission-engine","approval-system","provider-integrations"],approval_gate:true,author:"Mehul Gupta",brand:"MG Labs Co"});}
