@@ -1,10 +1,16 @@
 import {bearerToken,getAuthenticatedUser,supabaseRequest} from "../lib/supabase.js";
-import {isInternalRequest} from "../lib/internal-auth.js";
+import {isMasterRequest,isInternalRequest,isScopedAutomationRequest} from "../lib/internal-auth.js";
 import {assertApprovalOwner,assertMissionOwner} from "../lib/authz.js";
 import {body} from "../lib/validation.js";
 import {notify} from "../lib/notifications.js";
 export const methods=["GET","POST"];
-async function resolveUser(req){const token=bearerToken(req);if(isInternalRequest(req))return{id:null,internal:true,token:null};return{id:(await getAuthenticatedUser(token)).id,internal:false,token};}
+async function resolveUser(req){
+  const token=bearerToken(req);
+  if(req.method==="GET"&&isInternalRequest(req,"approvals:read"))return{id:null,internal:true,token:null};
+  if(req.method==="POST"&&isMasterRequest(req))return{id:null,internal:true,token:null};
+  if(req.method==="POST"&&isScopedAutomationRequest(req)){const e=new Error("Scoped automation credentials cannot resolve approvals");e.code="FORBIDDEN";throw e;}
+  return{id:(await getAuthenticatedUser(token)).id,internal:false,token};
+}
 export default async function(req,res){try{
  const user=await resolveUser(req);
  if(req.method==="GET"){const u=new URL(req.url,"http://localhost"),id=u.searchParams.get("id"),status=u.searchParams.get("status")||"pending",missionId=u.searchParams.get("mission_id");if(!user.internal&&!missionId&&!id)return res.status(400).json({error:"mission_id or id is required"});if(!user.internal&&missionId)await assertMissionOwner(missionId,user.id,user.token);const q=[id?"id=eq."+encodeURIComponent(id):"",missionId?"mission_id=eq."+encodeURIComponent(missionId):"","status=eq."+encodeURIComponent(status),"select=*","order=created_at.desc"].filter(Boolean).join("&");const approvals=await supabaseRequest("approvals?"+q,{accessToken:user.internal?undefined:user.token});if(!user.internal&&id&&approvals[0])await assertApprovalOwner(id,user.id,user.token);return res.json({approvals});}
@@ -18,4 +24,4 @@ export default async function(req,res){try{
  if(approval.mission_id)await supabaseRequest("missions?id=eq."+encodeURIComponent(approval.mission_id),{method:"PATCH",body:{status:action==="approve"?"running":"cancelled"}});
  await supabaseRequest("agent_events",{method:"POST",body:{mission_id:approval.mission_id||null,task_id:approval.task_id||null,event_type:"approval_"+status,message:"Approval "+status,metadata:{approval_id:approval.id,action}}});
  return res.json({approval:updated,status});
-}catch(error){const code=error?.code==="FORBIDDEN"?403:error?.code==="NOT_FOUND"?404:400;return res.status(code).json({error:error?.message||"Approval request failed",code:error?.code||"REQUEST_FAILED"});}}
+}catch(error){const code=error?.code==="FORBIDDEN"?403:error?.status||error?.code==="NOT_FOUND"?404:400;return res.status(code).json({error:error?.message||"Approval request failed",code:error?.code||"REQUEST_FAILED"});}}
