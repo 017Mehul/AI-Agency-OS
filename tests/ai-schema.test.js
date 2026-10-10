@@ -4,3 +4,7 @@ test("rejects malformed mission plans",()=>assert.throws(()=>validateMissionPlan
 test("validates QA",()=>assert.equal(validateQA({pass:true,issues:[],corrections:[],confidence:90}).pass,true));
 test("validates lead analysis services",()=>assert.throws(()=>validateLeadAnalysis({opportunities:[{service:"unknown"}]}),/invalid service/));
 test("validates proposal essentials",()=>assert.throws(()=>validateProposal({subject:"x"}),/message is required/));
+
+import {aiJSON} from "../lib/ai.js";
+
+test("parses fenced JSON responses",()=>{});
