@@ -9,8 +9,8 @@ export default async function(req,res){try{const user=await resolveUser(req);
  if(req.method==="GET"){const u=new URL(req.url,"http://localhost"),id=u.searchParams.get("id"),status=u.searchParams.get("status")||"pending",missionId=u.searchParams.get("mission_id");
   if(!user.internal){if(missionId)await assertMissionOwner(missionId,user.id,user.token);if(id){const approvals=await supabaseRequest("approvals?id=eq."+encodeURIComponent(id)+"&status=eq."+encodeURIComponent(status)+"&select=*&order=created_at.desc",{accessToken:user.token});if(approvals[0])await assertApprovalOwner(id,user.id,user.token);return res.json({approvals});}
    const missions=await supabaseRequest("missions?created_by=eq."+encodeURIComponent(user.id)+"&select=id",{accessToken:user.token}),leads=await supabaseRequest("leads?created_by=eq."+encodeURIComponent(user.id)+"&select=id",{accessToken:user.token}),mids=missions.map(x=>x.id),lids=leads.map(x=>x.id),parts=[];
-   if(missionId)parts.push("mission_id=eq."+encodeURIComponent(missionId));else if(mids.length)parts.push("mission_id=in.("+mids.join(",")+")");
-   if(lids.length)parts.push("lead_id=in.("+lids.join(",")+")");if(!mids.length&&!lids.length)return res.json({approvals:[]});
+   if(missionId){parts.push("mission_id=eq."+encodeURIComponent(missionId));}
+   else {if(!mids.length&&!lids.length)return res.json({approvals:[]});const ors=[];if(mids.length)ors.push("mission_id.in.("+mids.join(",")+")");if(lids.length)ors.push("lead_id.in.("+lids.join(",")+")");parts.push("or=("+ors.join(",")+")");}
    const q=["status=eq."+encodeURIComponent(status),"select=*","order=created_at.desc",...parts].join("&");return res.json({approvals:await supabaseRequest("approvals?"+q,{accessToken:user.token})});
   }
   const q=[id?"id=eq."+encodeURIComponent(id):"",missionId?"mission_id=eq."+encodeURIComponent(missionId):"","status=eq."+encodeURIComponent(status),"select=*","order=created_at.desc"].filter(Boolean).join("&");return res.json({approvals:await supabaseRequest("approvals?"+q)});
