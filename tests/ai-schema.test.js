@@ -5,6 +5,8 @@ test("validates QA",()=>assert.equal(validateQA({pass:true,issues:[],corrections
 test("validates lead analysis services",()=>assert.throws(()=>validateLeadAnalysis({opportunities:[{service:"unknown"}]}),/invalid service/));
 test("validates proposal essentials",()=>assert.throws(()=>validateProposal({subject:"x"}),/message is required/));
 
-import {aiJSON} from "../lib/ai.js";
+import {parseJSONResponse} from "../lib/ai.js";
 
-test("parses fenced JSON responses",()=>{});
+test("parses fenced JSON responses",()=>assert.deepEqual(parseJSONResponse({choices:[{message:{content:"```json\n{\"ok\":true}\n```"}}]}),{ok:true}));
+test("parses think-prefixed JSON responses",()=>assert.deepEqual(parseJSONResponse({choices:[{message:{content:"<think>reasoning</think>\n{\"ok\":true}"}}]}),{ok:true}));
+test("parses JSON surrounded by prose",()=>assert.deepEqual(parseJSONResponse({choices:[{message:{content:"Here is the result:\n{\"ok\":true}\nDone."}}]}),{ok:true}));
