@@ -9,5 +9,8 @@
   "scripts": {
     "test": "node --test tests/*.js",
     "check": "find api lib public tests -name \"*.js\" -print0 | xargs -0 -n1 node --check"
+  },
+  "dependencies": {
+    "@vercel/functions": "^3.9.11"
   }
 }
