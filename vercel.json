@@ -1,1 +1,8 @@
-{"version":2}
+{
+  "version": 2,
+  "functions": {
+    "api/mission-run.js": {
+      "maxDuration": 300
+    }
+  }
+}
